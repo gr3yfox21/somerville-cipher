@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/puzzle_card.dart';
+import '../widgets/menu_bar.dart' as custom;
 
 class PathDetailScreen extends StatelessWidget {
   final String pathId;
@@ -24,17 +25,11 @@ class PathDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: custom.MenuBar(
+        title: title,
         backgroundColor: startColor,
-        title: Text(
-          title,
-          style: TextStyle(
-            fontFamily: font,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        font: font,
+        iconColor: Colors.white,
       ),
       body: Container(
         decoration: BoxDecoration(

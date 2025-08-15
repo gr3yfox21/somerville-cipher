@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/puzzle.dart';
 import '../services/progress_tracker.dart';
 import '../models/path.dart';
+import '../services/answer_validator.dart';
 
 class PuzzleScreen extends StatefulWidget {
   final Puzzle puzzle;
@@ -18,14 +19,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   bool showHints = false;
 
   void checkAnswer() {
-    final input = _controller.text.trim().toLowerCase();
-    final answers = widget.puzzle.answers.map((a) => a.toLowerCase()).toList();
+    final input = _controller.text;
+    final answers = widget.puzzle.answers;
 
     print('Submitted: "$input"');
     print('Puzzle ID: ${widget.puzzle.id}');
     print('Expected answers: ${answers.join(", ")}');
 
-    final isCorrect = answers.contains(input);
+    final isCorrect = isCorrectAnswer(input, answers);
 
     setState(() {
       feedback = isCorrect ? '✅ Correct!' : '❌ Try again.';
@@ -93,95 +94,97 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           ),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(p.imageAsset),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.5),
-              BlendMode.darken,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              p.imageAsset,
+              fit: BoxFit.contain,
+              alignment: Alignment.topCenter,
             ),
           ),
-        ),
-        padding: EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                p.narrativePrompt,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.white60,
-                  fontFamily: p.font,
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                p.prompt,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontFamily: p.font,
-                ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _controller,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Enter your answer...',
-                  hintStyle: TextStyle(color: Colors.white54),
-                  filled: true,
-                  fillColor: Colors.black26,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+          Container(
+            color: Colors.black.withOpacity(0.5),
+          ),
+          SingleChildScrollView(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  p.narrativePrompt,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white60,
+                    fontFamily: p.font,
                   ),
                 ),
-              ),
-              SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: checkAnswer,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                ),
-                child: Text('Submit'),
-              ),
-              SizedBox(height: 12),
-              Text(
-                feedback,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontFamily: p.font,
-                ),
-              ),
-              if (p.hints != null && p.hints!.isNotEmpty)
-                TextButton(
-                  onPressed: () => setState(() => showHints = !showHints),
-                  child: Text(
-                    showHints ? 'Hide Hints' : 'Show Hints',
-                    style: TextStyle(color: Colors.amberAccent),
+                SizedBox(height: 16),
+                Text(
+                  p.prompt,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontFamily: p.font,
                   ),
                 ),
-              if (showHints)
-                ...p.hints!.map(
-                      (hint) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      '💡 $hint',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontFamily: p.font,
-                      ),
+                SizedBox(height: 12),
+                TextField(
+                  controller: _controller,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Enter your answer...',
+                    hintStyle: TextStyle(color: Colors.white54),
+                    filled: true,
+                    fillColor: Colors.black26,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
-            ],
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: checkAnswer,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                  ),
+                  child: Text('Submit'),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  feedback,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontFamily: p.font,
+                  ),
+                ),
+                if (p.hints != null && p.hints!.isNotEmpty)
+                  TextButton(
+                    onPressed: () => setState(() => showHints = !showHints),
+                    child: Text(
+                      showHints ? 'Hide Hints' : 'Show Hints',
+                      style: TextStyle(color: Colors.amberAccent),
+                    ),
+                  ),
+                if (showHints)
+                  ...p.hints!.map(
+                        (hint) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        '💡 $hint',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontFamily: p.font,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

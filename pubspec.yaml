@@ -86,6 +86,11 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/colonial_echoes_1.png
+    - assets/images/colonial_echoes_2.png
+    - assets/images/colonial_echoes_3.png
+    - assets/images/colonial_echoes_4.png
+
 
   uses-material-design: true
 

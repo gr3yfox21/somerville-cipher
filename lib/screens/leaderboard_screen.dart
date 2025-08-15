@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/menu_bar.dart' as custom;
 
 class LeaderboardScreen extends StatelessWidget {
   const LeaderboardScreen({super.key});
