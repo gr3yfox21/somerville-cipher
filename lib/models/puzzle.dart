@@ -15,6 +15,7 @@ class Puzzle {
   final String answer;
   final List<String> answers;
   final String pathId;
+  final String? npcId;
 
   const Puzzle({
     required this.id,
@@ -30,5 +31,6 @@ class Puzzle {
     this.npcGuideId,
     required this.answer,
     required this.answers,
-    required this.pathId,});
+    required this.pathId,
+    this.npcId});
 }

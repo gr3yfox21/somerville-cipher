@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/puzzle.dart';
 import '../services/progress_tracker.dart';
+import 'puzzle_screen.dart';
 
 class PathScreen extends StatelessWidget {
   final String pathId;
@@ -23,7 +24,7 @@ class PathScreen extends StatelessWidget {
     final unlockedPuzzles = allPuzzles
         .where((p) => p.pathId == pathId && unlockedIds.contains(p.id))
         .toList()
-      ..sort((a, b) => a.title.compareTo(b.title)); // ✅ Sort alphabetically
+      ..sort((a, b) => a.title.compareTo(b.title));
 
     return Scaffold(
       appBar: AppBar(
@@ -83,11 +84,17 @@ class PathScreen extends StatelessWidget {
               )
                   : null,
               onTap: () {
-                tracker.setLastUnlocked(''); // ✅ Clear highlight
-                Navigator.pushNamed(
+                tracker.setLastUnlocked('');
+                Navigator.push(
                   context,
-                  '/puzzle',
-                  arguments: puzzle,
+                  MaterialPageRoute(
+                    builder: (context) => PuzzleScreen(
+                      puzzle: puzzle,
+                      onSolved: () {
+                        Navigator.pop(context); // 👈 Return to capsule
+                      },
+                    ),
+                  ),
                 );
               },
             ),

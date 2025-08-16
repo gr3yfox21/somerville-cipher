@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import '../models/puzzle.dart';
 import '../services/progress_tracker.dart';
-import '../models/path.dart';
 import '../services/answer_validator.dart';
+import '../screens/capsule_screen.dart';
+import '../data/path_data.dart'; // ✅ Your list of all PuzzlePaths
 
 class PuzzleScreen extends StatefulWidget {
   final Puzzle puzzle;
+  final VoidCallback? onSolved;
 
-  const PuzzleScreen({required this.puzzle, Key? key}) : super(key: key);
+  const PuzzleScreen({
+    required this.puzzle,
+    this.onSolved,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<PuzzleScreen> createState() => _PuzzleScreenState();
@@ -17,6 +23,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   final TextEditingController _controller = TextEditingController();
   String feedback = '';
   bool showHints = false;
+  bool isSolved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final tracker = ProgressTracker();
+    isSolved = tracker.isPuzzleCompleted(widget.puzzle.id);
+  }
 
   void checkAnswer() {
     final input = _controller.text;
@@ -45,32 +59,35 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     tracker.completePuzzle(puzzleId);
     tracker.incrementPathProgress(pathId);
     tracker.setLastUnlocked(puzzleId);
+    tracker.awardPoint();
 
-    final path = puzzlePaths.firstWhere((p) => p.id == pathId);
+    print('🎯 Point awarded! Total now: ${tracker.getPoints()}');
+
+    setState(() {
+      isSolved = true;
+    });
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
         title: Text('Puzzle Solved!'),
-        content: Text('You’ve unlocked new lore.'),
+        content: Text('You’ve unlocked new lore and earned a point!'),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Close dialog
 
-              Navigator.pushNamedAndRemoveUntil(
+              final unlockedPaths = ProgressTracker().getUnlockedPaths(getPuzzlePaths());;
+
+              Navigator.pushReplacement(
                 context,
-                '/path',
-                    (route) => false,
-                arguments: {
-                  'pathId': path.id,
-                  'pathTitle': path.title,
-                  'allPuzzles': path.puzzles,
-                },
+                MaterialPageRoute(
+                  builder: (_) => CapsuleScreen(paths: unlockedPaths),
+                ),
               );
             },
-            child: Text('Continue'),
+            child: Text('View Capsule'),
           ),
         ],
       ),
@@ -130,27 +147,46 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                   ),
                 ),
                 SizedBox(height: 12),
-                TextField(
-                  controller: _controller,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Enter your answer...',
-                    hintStyle: TextStyle(color: Colors.white54),
-                    filled: true,
-                    fillColor: Colors.black26,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+
+                if (!isSolved) ...[
+                  TextField(
+                    controller: _controller,
+                    style: TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Enter your answer...',
+                      hintStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: checkAnswer,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                  SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: checkAnswer,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                    ),
+                    child: Text('Submit'),
                   ),
-                  child: Text('Submit'),
-                ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green),
+                      SizedBox(width: 8),
+                      Text(
+                        'Solved: ${p.answers.first}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.greenAccent,
+                          fontFamily: p.font,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
                 SizedBox(height: 12),
                 Text(
                   feedback,
@@ -160,6 +196,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                     fontFamily: p.font,
                   ),
                 ),
+
                 if (p.hints != null && p.hints!.isNotEmpty)
                   TextButton(
                     onPressed: () => setState(() => showHints = !showHints),

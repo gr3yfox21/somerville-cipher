@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/path.dart'; // for PuzzlePath
+import '../data/path_data.dart';
 import '../widgets/menu_bar.dart' as custom;
+import '../models/puzzle.dart'; // for screens and services
+import '../models/puzzle_path.dart'; // for screens/services
 
 class CapsuleScreen extends StatelessWidget {
   final List<PuzzlePath> paths;

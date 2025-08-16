@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/colors.dart';
+import '../theme/colors.dart';
 import '../constants/fonts.dart';
 
 class PathTheme {

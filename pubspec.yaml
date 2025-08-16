@@ -35,7 +35,7 @@ dependencies:
   provider: ^6.1.1         # For state management
   flutter_animate: ^4.2.0  # For smooth animations
   audioplayers: ^6.5.0     # For NPC voice lines or sound puzzles
-
+  shared_preferences: ^2.2.2
 
 
 dev_dependencies:

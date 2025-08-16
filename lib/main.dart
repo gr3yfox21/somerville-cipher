@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+
+// Models
+import 'models/puzzle.dart';
+import 'models/puzzle_path.dart';
+import 'models/path_theme.dart'; // optional
+import 'models/npc.dart';        // optional
+
+// Screens
 import 'screens/welcome_screen.dart';
 import 'screens/capsule_screen.dart';
 import 'screens/leaderboard_screen.dart';
@@ -6,10 +14,15 @@ import 'screens/npc_archive_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/puzzle_screen.dart';
 import 'screens/path_detail_screen.dart';
-import 'screens/path_screen.dart'; // ✅ Your dynamic path screen
-import 'models/path.dart'; // for PuzzlePath and puzzlePaths
+import 'screens/paths_screen.dart'; // renamed from path_screen.dart
+
+// Services
 import 'services/answer_validator.dart';
-import 'models/puzzle.dart';
+
+// Data
+import 'data/path_data.dart'; // contains getPuzzlePaths()
+
+final List<PuzzlePath> puzzlePaths = getPuzzlePaths(); // Load your paths here
 
 void checkAnswer(String playerInput, Puzzle puzzle) {
   final isCorrect = isCorrectAnswer(playerInput, puzzle.answers);
@@ -41,22 +54,23 @@ class SomervilleCipherApp extends StatelessWidget {
         '/settings': (context) => SettingsScreen(),
 
         // 🧩 First Puzzle Screens
-        for (var path in puzzlePaths)
+        for (PuzzlePath path in puzzlePaths)
           if (path.puzzles.isNotEmpty)
-            path.puzzles.first.route: (context) =>
-                PuzzleScreen(puzzle: path.puzzles.first),
+            path.puzzles.first.route: (context) => PuzzleScreen(
+              puzzle: path.puzzles.first,
+            ),
 
         // 🧭 Path Detail Screens
-        for (var path in puzzlePaths)
+        for (PuzzlePath path in puzzlePaths)
           path.route: (context) => buildPathDetailScreen(path),
 
         // ✨ Dynamic Path Puzzle List Screen
         '/path': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map;
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
           return PathScreen(
-            pathId: args['pathId'],
-            pathTitle: args['pathTitle'],
-            allPuzzles: args['allPuzzles'],
+            pathId: args['pathId'] as String,
+            pathTitle: args['pathTitle'] as String,
+            allPuzzles: args['allPuzzles'] as List<Puzzle>,
           );
         },
       },
@@ -73,7 +87,7 @@ Widget buildPathDetailScreen(PuzzlePath path) {
     startColor: path.color.withOpacity(0.9),
     endColor: path.color.withOpacity(0.6),
     font: path.font,
-    puzzles: path.puzzles.map((puzzle) => {
+    puzzles: path.puzzles.map<Map<String, String>>((puzzle) => {
       'title': puzzle.title,
       'description': puzzle.narrativePrompt,
       'route': puzzle.route,
